@@ -40,61 +40,51 @@
     </table>
 
     <script>
-        const cryptoUrl = "https://api.coincap.io/v2/assets";
-        const conversionUrl = "https://open.er-api.com/v6/latest/USD";
+        const cryptoUrl = 'https://api.coincap.io/v2/assets';
+        const conversionUrl = 'https://open.er-api.com/v6/latest/USD';
 
-        // Fetching data from APIs
         Promise.all([fetch(cryptoUrl), fetch(conversionUrl)])
-            .then((responses) => Promise.all(responses.map((response) => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
-            })))
-            .then((data) => {
-                const cryptoData = data[0].data;
-                const conversionRates = data[1].rates;
+        .then(responses => Promise.all(responses.map(response => response.json())))
+        .then(data => {
+            const cryptoData = data[0].data;
+            const conversionRates = data[1].rates;
 
-                const top25Crypto = cryptoData.slice(0, 25).map((crypto) => {
-                    const usdPrice = parseFloat(crypto.priceUsd);
-                    const gbpPrice = usdPrice * conversionRates.GBP;
-                    const eurPrice = usdPrice * conversionRates.EUR;
-                    const aedPrice = usdPrice * conversionRates.AED;
+            const top25Crypto = cryptoData.slice(0, 25).map(crypto => {
+                const usdPrice = parseFloat(crypto.priceUsd);
+                const gbpPrice = usdPrice * conversionRates.GBP;
+                const eurPrice = usdPrice * conversionRates.EUR;
+                const aedPrice = usdPrice * conversionRates.AED;
 
-                    return {
-                        id: crypto.id,
-                        rank: crypto.rank,
-                        symbol: crypto.symbol,
-                        name: crypto.name,
-                        url: `https://coincap.io/assets/${crypto.id}`,
-                        price_usd: usdPrice,
-                        price_gbp: gbpPrice,
-                        price_eur: eurPrice,
-                        price_aed: aedPrice
-                    };
-                });
-
-                const tableBody = document.getElementById("cryptoTableBody");
-                top25Crypto.forEach((crypto) => {
-                    const row = document.createElement("tr");
-                    row.innerHTML = `
-                        <td><a href="${crypto.url}" target="_blank">${crypto.id}</a></td>
-                        <td>${crypto.rank}</td>
-                        <td>${crypto.symbol}</td>
-                        <td>${crypto.name}</td>
-                        <td>${crypto.price_usd.toFixed(2)}</td>
-                        <td>${crypto.price_gbp.toFixed(2)}</td>
-                        <td>${crypto.price_eur.toFixed(2)}</td>
-                        <td>${crypto.price_aed.toFixed(2)}</td>
-                    `;
-                    tableBody.appendChild(row);
-                });
-            })
-            .catch((error) => {
-                console.error("Error fetching data: ", error);
+                return {
+                    id: crypto.id,
+                    rank: crypto.rank,
+                    symbol: crypto.symbol,
+                    name: crypto.name,
+                    url: `https://coincap.io/assets/${crypto.id}`,
+                    price_usd: usdPrice,
+                    price_gbp: gbpPrice,
+                    price_eur: eurPrice,
+                    price_aed: aedPrice
+                };
             });
 
-        // Function to sort the table
+            const tableBody = document.getElementById('cryptoTableBody');
+            top25Crypto.forEach(crypto => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><a href="${crypto.url}" target="_blank">${crypto.id}</a></td>
+                    <td>${crypto.rank}</td>
+                    <td>${crypto.symbol}</td>
+                    <td>${crypto.name}</td>
+                    <td>${crypto.price_usd.toFixed(2)}</td>
+                    <td>${crypto.price_gbp.toFixed(2)}</td>
+                    <td>${crypto.price_eur.toFixed(2)}</td>
+                    <td>${crypto.price_aed.toFixed(2)}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        });
+
         function sortTable(columnIndex) {
             const table = document.getElementById("cryptoTable");
             const rows = Array.from(table.rows).slice(1);
@@ -106,9 +96,10 @@
                     ? parseFloat(aText) - parseFloat(bText)
                     : aText.localeCompare(bText);
             });
-            sortedRows.forEach((row) => table.appendChild(row));
+            sortedRows.forEach(row => table.appendChild(row));
         }
     </script>
 </body>
 </html>
+
 
