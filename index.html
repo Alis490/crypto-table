@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top 25 Cryptocurrencies</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Top 25 Cryptocurrencies</h1>
+    <table id="cryptoTable">
+        <thead>
+            <tr>
+                <th onclick="sortTable(0)">ID</th>
+                <th onclick="sortTable(1)">Rank</th>
+                <th onclick="sortTable(2)">Symbol</th>
+                <th onclick="sortTable(3)">Name</th>
+                <th onclick="sortTable(4)">USD Price</th>
+                <th onclick="sortTable(5)">GBP Price</th>
+                <th onclick="sortTable(6)">EUR Price</th>
+                <th onclick="sortTable(7)">AED Price</th>
+            </tr>
+        </thead>
+        <tbody id="cryptoTableBody">
+            <!-- Data will be inserted here by JavaScript -->
+        </tbody>
+    </table>
+
+    <script>
+        const cryptoUrl = "https://api.coincap.io/v2/assets";
+        const conversionUrl = "https://open.er-api.com/v6/latest/USD";
+
+        Promise.all([fetch(cryptoUrl), fetch(conversionUrl)])
+            .then((responses) => Promise.all(responses.map((response) => response.json())))
+            .then((data) => {
+                const cryptoData = data[0].data;
+                const conversionRates = data[1].rates;
+
+                const top25Crypto = cryptoData.slice(0, 25).map((crypto) => {
+                    const usdPrice = parseFloat(crypto.priceUsd);
+                    const gbpPrice = usdPrice * conversionRates.GBP;
+                    const eurPrice = usdPrice * conversionRates.EUR;
+                    const aedPrice = usdPrice * conversionRates.AED;
+
+                    return {
+                        id: crypto.id,
+                        rank: crypto.rank,
+                        symbol: crypto.symbol,
+                        name: crypto.name,
+                        url: \`https://coincap.io/assets/\${crypto.id}\`,
+                        price_usd: usdPrice,
+                        price_gbp: gbpPrice,
+                        price_eur: eurPrice,
+                        price_aed: aedPrice,
+                    };
+                });
+
+                const tableBody = document.getElementById("cryptoTableBody");
+                top25Crypto.forEach((crypto) => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = \`
+                        <td><a href="\${crypto.url}" target="_blank">\${crypto.id}</a></td>
+                        <td>\${crypto.rank}</td>
+                        <td>\${crypto.symbol}</td>
+                        <td>\${crypto.name}</td>
+                        <td>\${crypto.price_usd.toFixed(2)}</td>
+                        <td>\${crypto.price_gbp.toFixed(2)}</td>
+                        <td>\${crypto.price_eur.toFixed(2)}</td>
+                        <td>\${crypto.price_aed.toFixed(2)}</td>
+                    \`;
+                    tableBody.appendChild(row);
+                });
+            });
+
+        function sortTable(columnIndex) {
+            const table = document.getElementById("cryptoTable");
+            const rows = Array.from(table.rows).slice(1);
+            const isNumericColumn = [1, 4, 5, 6, 7].includes(columnIndex);
+            const sortedRows = rows.sort((a, b) => {
+                const aText = a.cells[columnIndex].innerText;
+                const bText = b.cells[columnIndex].innerText;
+                return isNumericColumn
+                    ? parseFloat(aText) - parseFloat(bText)
+                    : aText.localeCompare(bText);
+            });
+            sortedRows.forEach((row) => table.appendChild(row));
+        }
+    </script>
+</body>
+</html>
